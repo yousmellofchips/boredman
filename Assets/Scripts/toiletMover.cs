@@ -24,6 +24,9 @@ public class toiletMover : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+		if (GameManager.gameFrozen)
+		{ return; }
+
 		if (toilet.transform.localScale.x > 0) { // left facing
 			if (toilet.transform.position.x <= leftmostX) {
 				toilet.transform.localScale = new Vector3(-toilet.transform.localScale.x,
