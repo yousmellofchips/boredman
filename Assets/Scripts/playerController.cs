@@ -47,7 +47,7 @@ public class playerController : MonoBehaviour {
 		if (levelCompleteDelay > 0) {
 			// hang about doing nothing
 			if (--levelCompleteDelay == 0) {
-				Application.LoadLevel(0);
+				GameManager.RestartLevel();
 				GameManager.gameFrozen = false;
 			}
 			return;
@@ -117,7 +117,7 @@ public class playerController : MonoBehaviour {
 
 		if (fallOutsideCount > 0) {
 			if (--fallOutsideCount == 0) {
-				Application.LoadLevel(0);
+				GameManager.LoseLife();
 			}
 		}
 	}
@@ -153,7 +153,7 @@ public class playerController : MonoBehaviour {
 				audio.PlayOneShot(source.clip);
 				fallOutsideCount = 80;
 			} else {
-				Application.LoadLevel(0);
+				GameManager.LoseLife();
 			}
 		}
 	}
