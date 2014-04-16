@@ -36,6 +36,9 @@ public class playerController : MonoBehaviour {
 		}
 
 		if (Input.GetButtonDown("Fire1") && grounded) {
+			GameObject obj = GameObject.Find("jump");
+			AudioSource source = obj.GetComponent<AudioSource>();
+			audio.PlayOneShot(source.clip, 0.48f); //MSH: because volume is not handled correctly on AudioSource
 			jump = true;
 		}
 	}
@@ -65,7 +68,7 @@ public class playerController : MonoBehaviour {
 
 			Collider2D[] colliders = this.GetComponents<Collider2D>();
 			foreach (Collider2D c in colliders) {
-				c.isTrigger = true; // turn of stop on collide (probably not the best way??)
+				c.isTrigger = true; // turn off stop on collide (probably not the best way??)
 			}
 
 			audio.Play();
@@ -79,7 +82,8 @@ public class playerController : MonoBehaviour {
 		float xdelta = 0.0f;
 
 		var horizontal = Input.GetAxis("Horizontal");
-		
+
+
 		if (horizontal > 0)
 		{
 			animator.SetInteger("Direction", 2);
@@ -107,7 +111,7 @@ public class playerController : MonoBehaviour {
 		}
 
 		// Falling too fast to survive?
-		if (rigidbody2D.velocity.y < -10.0f) {
+		if (rigidbody2D.velocity.y < -9.0f) {
 			isCratering = true;
 		}
 
@@ -125,6 +129,7 @@ public class playerController : MonoBehaviour {
 		} else if (isCratering) {
 			isDying = true;
 		}
+
 	}
 
 	void OnTriggerEnter2D(Collider2D collider) {
