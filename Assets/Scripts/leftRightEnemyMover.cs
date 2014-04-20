@@ -19,9 +19,9 @@ public class leftRightEnemyMover : MonoBehaviour {
 			rightmostX = leftmostX + moveDistance;
 		}
 	}
-	
+
 	void FixedUpdate () {
-		if (GameManager.gameFrozen)
+		if (GameManager.Get().GameFrozen)
 		{ return; }
 
 		if (transform.localScale.x > 0) { // left facing

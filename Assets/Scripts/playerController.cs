@@ -47,8 +47,8 @@ public class playerController : MonoBehaviour {
 		if (levelCompleteDelay > 0) {
 			// hang about doing nothing
 			if (--levelCompleteDelay == 0) {
-				GameManager.RestartLevel();
-				GameManager.gameFrozen = false;
+				GameManager.Get().RestartLevel();
+				GameManager.Get().GameFrozen = false;
 			}
 			return;
 		}
@@ -117,7 +117,7 @@ public class playerController : MonoBehaviour {
 
 		if (fallOutsideCount > 0) {
 			if (--fallOutsideCount == 0) {
-				GameManager.LoseLife();
+				GameManager.Get().LoseLife();
 			}
 		}
 	}
@@ -140,7 +140,7 @@ public class playerController : MonoBehaviour {
 			GameObject obj = GameObject.Find("levelCompleted");
 			AudioSource source = obj.GetComponent<AudioSource>();
 			audio.PlayOneShot(source.clip);
-			GameManager.gameFrozen = true;
+			GameManager.Get().GameFrozen = true;
 		}
 	}
 
@@ -153,7 +153,7 @@ public class playerController : MonoBehaviour {
 				audio.PlayOneShot(source.clip);
 				fallOutsideCount = 80;
 			} else {
-				GameManager.LoseLife();
+				GameManager.Get().LoseLife();
 			}
 		}
 	}
