@@ -47,7 +47,7 @@ public class playerController : MonoBehaviour {
 		if (levelCompleteDelay > 0) {
 			// hang about doing nothing
 			if (--levelCompleteDelay == 0) {
-				GameManager.Get().RestartLevel();
+				GameManager.Get().NextLevel();
 				GameManager.Get().GameFrozen = false;
 			}
 			return;

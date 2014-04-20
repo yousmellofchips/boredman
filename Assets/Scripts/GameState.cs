@@ -7,6 +7,8 @@ public enum GameState {
 	HiScores,
 	Credits,
 	GameStart,
+	InitLevel,
 	InGame,
-	GameOver
+	GameOver,
+	GameCompleted
 }

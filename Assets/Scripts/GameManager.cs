@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour {
 
@@ -22,7 +23,6 @@ public class GameManager : MonoBehaviour {
 	private const int maxLives = 3;
 
 	private GameState gameState;
-	private bool gameOver = false;
 	private int lives = 3;
 	private int currentLevel = 0;
 	private AudioSource musicSource;
@@ -31,18 +31,26 @@ public class GameManager : MonoBehaviour {
 	
 	public void RestartLevel() {
 		Application.LoadLevel(currentLevel);
+		gameState = GameState.InitLevel;
 	}
 
 	public void LoseLife() {
 		lives--;
 		if (lives <= -1) {
 			gameState = GameState.GameOver;
-//			GameFrozen = true;
-//			gameOver = true;
-//			GameObject obj = GameObject.Find("GameOverText");
-//			obj.transform.position = new Vector3(0.5f, 0.5f, 0);
 		} else {
 			RestartLevel();
+		}
+	}
+
+	public void NextLevel() {
+		if (++currentLevel >= Application.levelCount) {
+			currentLevel = 0;
+
+			gameState = GameState.GameCompleted;
+		} else {
+			RestartLevel();
+			gameState = GameState.InitLevel;
 		}
 	}
 
@@ -65,22 +73,34 @@ public class GameManager : MonoBehaviour {
 			// TODO: some pretty image of nonsense, some title music (started in Init?)
 			//		 Flip after some time period to hiscores screen / state
 			//       wait for key / button, turn off music, switch state:
+			gameState = GameState.GameStart;
+			break;
+		}
+		case GameState.GameStart: {
+
+			RestartLevel();
+			break;
+		}
+		case GameState.InitLevel: {
 			gameState = GameState.InGame;
 			break;
 		}
 		case GameState.InGame:
 		{
+			UpdateLives();
+
 			break;
 		}
-		case GameState.GameOver:{
-			// TODO: show game over label. wait for button (probably after some arbitrary delay)
+		case GameState.GameOver: {
+			// Show game over label. Wait for button (TODO: probably after some arbitrary delay?)
 			GameFrozen = true;
-			gameOver = true;
 			GameObject obj = GameObject.Find("GameOverText");
 			if (obj == null) {
 				obj = new GameObject();
+				obj.name = "GameOverText";
 				GUIText text = obj.AddComponent<GUIText>();
 				text.text = "GAME OVER";
+				text.fontSize = 20;
 				obj.transform.position = new Vector3(0.5f, 0.5f, 0);
 			}
 
@@ -90,48 +110,49 @@ public class GameManager : MonoBehaviour {
 			}
 			break;
 		}
+		case GameState.GameCompleted: {
+			// TODO: shiny completion sequence, happy days. Then...
+
+			gameState = GameState.TitleScreen;
+			break;
+		}
 		case GameState.Credits: {
 			// TODO: show scrolly credits until button pressed, then transition to TitleScreen (or Init)
 			break;
 		}
 		}
-
-//		if (gameOver) {
-//			if (Input.anyKeyDown) {
-//				RestartGame();
-//			}
-//			return;
-//		}
-//
-//		// TODO: this, but not every bloody frame!!
-//		for (int i = 3; i > 0; i--) {
-//			string name = "Bloke_LifeImage" + i.ToString();
-//			GameObject obj = GameObject.Find(name);
-//			if (i <= lives) {
-//				obj.transform.position = new Vector3(obj.transform.position.x, 4.8f, 0);
-//			} else 
-//			{
-//				obj.transform.position = new Vector3(obj.transform.position.x, -9000f, 0);
-//			}
-//		}
-	}
-
-	void RestartGame() {
-		GameObject musicObj = GameObject.Find("InGameMusic");
-		musicSource = musicObj.GetComponent<AudioSource>();
-		musicSource.Play ();
-
-		GameObject obj = GameObject.Find("GameOverText");
-		obj.transform.position = new Vector3(0, 0, 0);
-		ResetGame ();
-		Application.LoadLevel(currentLevel);
 	}
 
 	void ResetGame ()
 	{
 		lives = maxLives;
 		GameFrozen = false;
-		gameOver = false;
 		currentLevel = 0;
+	}
+
+	void UpdateLives() {
+		GameObject[] lifeHeads = GameObject.FindGameObjectsWithTag("LifeHead");
+		if (lifeHeads != null) {
+			foreach (GameObject lifeObj in lifeHeads) {
+				Destroy(lifeObj);
+			}
+		}
+
+		// Add the label for "lives" first, then add all the heads (one per life)
+		float lifeXPos = -6.5f;
+		if (GameObject.Find("Lives_Label_Image") == null) {
+			GameObject lifeLabel = (GameObject)Instantiate(Resources.Load("Lives_Label_Image"));
+			lifeLabel.name = "Lives_Label_Image";
+			lifeLabel.transform.position = new Vector3(lifeXPos, 4.72f, 0f);
+		}
+		lifeXPos += 0.4f;
+
+		for (int life = 0; life < lives; life++) {
+			GameObject lifeHead = (GameObject)Instantiate(Resources.Load("Bloke_LifeImage"));
+			lifeHead.tag = "LifeHead";
+			lifeHead.transform.position = new Vector3(lifeXPos, 4.8f, 0f);
+
+			lifeXPos += 0.3f;
+		}
 	}
 }
