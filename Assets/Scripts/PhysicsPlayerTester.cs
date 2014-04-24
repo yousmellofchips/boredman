@@ -165,7 +165,7 @@ public class PhysicsPlayerTester : MonoBehaviour
 	{
 		// a minor bit of trickery here. FixedUpdate sets _up to false so to ensure we never miss any jump presses we leave _up
 		// set to true if it was true the previous frame
-		_up = _up || Input.GetKeyDown( KeyCode.UpArrow ) || Input.GetButton("Fire1");
+		_up = _up || Input.GetKey( KeyCode.UpArrow ) || Input.GetButton("Fire1") || Input.GetKey(KeyCode.Space);
 		_right = Input.GetKey( KeyCode.RightArrow );
 		_left = Input.GetKey( KeyCode.LeftArrow );
 
