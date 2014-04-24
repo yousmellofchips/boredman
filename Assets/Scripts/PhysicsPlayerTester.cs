@@ -121,13 +121,25 @@ public class PhysicsPlayerTester : MonoBehaviour
 		if (col.gameObject.name.CompareTo("Fags") == 0) {
 			if (hacktasticBypassed == false) { return; } // skip first collision since Unity has bugz
 
-			GameObject obj = GameObject.Find("levelCompleted");
-			AudioSource source = obj.GetComponent<AudioSource>();
+			GameObject completedSoundComponent = GameObject.Find("levelCompleted");
+			AudioSource source = completedSoundComponent.GetComponent<AudioSource>();
 			audio.PlayOneShot(source.clip);
 
 			Destroy(col.gameObject);
-
 			if (--numFags > 0) return;
+
+			// Stop enemy animations.
+			GameObject[] objs = FindObjectsOfType<GameObject>();
+			foreach (GameObject obj in objs) {
+				if (obj.layer == 11) { // enemy layer
+					Animator animator = obj.GetComponent<Animator>();
+					if (animator != null) {
+						animator.enabled = false;
+						animator.animatePhysics = false;
+					}
+				}
+			}
+			_animator.enabled = false; // stop bloke's animation
 
 			levelCompleteDelay = 60;
 			_animator.SetInteger("Direction", 0);
@@ -140,6 +152,10 @@ public class PhysicsPlayerTester : MonoBehaviour
 	{
 		Debug.Log( "onTriggerExitEvent: " + col.gameObject.name );
 
+		if (hacktasticCountdown > 0) { // still avoiding bug
+			hacktasticCountdown = 20;
+			return;
+		}
 		hacktasticBypassed = true; // just in case it's still active - also multiple platform test TODO for this
 
 		if (col.gameObject.name == "Main Camera") {
@@ -178,7 +194,7 @@ public class PhysicsPlayerTester : MonoBehaviour
 		}
 	}
 
-	int hacktasticCountdown = 60;
+	int hacktasticCountdown = 20;
 
 	void FixedUpdate()
 	{
@@ -210,9 +226,10 @@ public class PhysicsPlayerTester : MonoBehaviour
 				if( transform.localScale.x < 0f )
 					transform.localScale = new Vector3( -transform.localScale.x, transform.localScale.y, transform.localScale.z );
 				
-				if( _controller.isGrounded )
+				if( _controller.isGrounded ) {
 					_animator.Play( Animator.StringToHash( "Run" ) );
-				_animator.SetInteger("Direction", 2);
+					//_animator.SetInteger("Direction", 2);
+				}
 			}
 			else if( _left )
 			{

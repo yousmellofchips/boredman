@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour {
+	private const int kInitialLevel = 1; // first actual playable level
+	private const int maxLives = 3;
 
 	public static GameManager Get() {
 		if (_instance == null) {
@@ -20,11 +22,8 @@ public class GameManager : MonoBehaviour {
 		set; 
 	}
 
-	private const int maxLives = 3;
-	private const int kInitialLevel = 1; // first actual playable level
-
 	private int lives = maxLives;
-	private int currentLevel = kInitialLevel;
+	private int currentLevel = 0;
 	private AudioSource musicSource;
 
 	private GameState gameState;
@@ -41,9 +40,7 @@ public class GameManager : MonoBehaviour {
 	}
 
 	public void NextLevel() {
-		if (++currentLevel >= Application.levelCount) {
-			currentLevel = kInitialLevel;
-
+		if (++currentLevel >= Application.levelCount - 1) {
 			gameState = GameState.GameCompleted;
 		} else {
 			gameState = GameState.InitLevel;
@@ -59,10 +56,10 @@ public class GameManager : MonoBehaviour {
 		switch (gameState) {
 		case GameState.Init:
 		{
-			GameFrozen = false;
 			lives = maxLives;
 			currentLevel = 0; // Title screen level special number zero
 			Application.LoadLevel(currentLevel);
+			GameFrozen = false;
 			gameState = GameState.TitleScreen;
 			break;
 		}
@@ -123,8 +120,13 @@ public class GameManager : MonoBehaviour {
 		}
 		case GameState.GameCompleted: {
 			// TODO: shiny completion sequence, happy days. Then...
-
-			gameState = GameState.Init;
+			if (Application.loadedLevel != Application.levelCount - 1) {
+				currentLevel = Application.levelCount - 1;
+				Application.LoadLevel("Game Completed");
+			}
+			if (Input.anyKeyDown) {
+				gameState = GameState.Init;
+			}
 			break;
 		}
 		case GameState.Credits: {
