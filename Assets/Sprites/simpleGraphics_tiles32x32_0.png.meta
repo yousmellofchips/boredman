@@ -152,16 +152,16 @@ TextureImporter:
         x: 96
         y: 96
         width: 32
-        height: 32
+        height: 16
       alignment: 0
       pivot: {x: .5, y: .5}
     - name: simpleGraphics_tiles32x32_0_12
       rect:
         serializedVersion: 2
         x: 128
-        y: 96
+        y: 112
         width: 32
-        height: 32
+        height: 16
       alignment: 0
       pivot: {x: .5, y: .5}
     - name: simpleGraphics_tiles32x32_0_13

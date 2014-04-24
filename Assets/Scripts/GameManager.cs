@@ -21,42 +21,37 @@ public class GameManager : MonoBehaviour {
 	}
 
 	private const int maxLives = 3;
+	private const int kInitialLevel = 1; // first actual playable level
 
-	private GameState gameState;
-	private int lives = 3;
-	private int currentLevel = 0;
+	private int lives = maxLives;
+	private int currentLevel = kInitialLevel;
 	private AudioSource musicSource;
 
+	private GameState gameState;
+
 	private static GameManager _instance = null;
-	
-	public void RestartLevel() {
-		Application.LoadLevel(currentLevel);
-		gameState = GameState.InitLevel;
-	}
 
 	public void LoseLife() {
 		lives--;
 		if (lives <= -1) {
 			gameState = GameState.GameOver;
 		} else {
-			RestartLevel();
+			gameState = GameState.InitLevel;
 		}
 	}
 
 	public void NextLevel() {
 		if (++currentLevel >= Application.levelCount) {
-			currentLevel = 0;
+			currentLevel = kInitialLevel;
 
 			gameState = GameState.GameCompleted;
 		} else {
-			RestartLevel();
 			gameState = GameState.InitLevel;
 		}
 	}
 
 	void Awake() {
 		gameState = GameState.Init;
-		GameFrozen = false;
 	}
 
 	void Update() {
@@ -64,7 +59,10 @@ public class GameManager : MonoBehaviour {
 		switch (gameState) {
 		case GameState.Init:
 		{
-			ResetGame();
+			GameFrozen = false;
+			lives = maxLives;
+			currentLevel = 0; // Title screen level special number zero
+			Application.LoadLevel(currentLevel);
 			gameState = GameState.TitleScreen;
 			break;
 		}
@@ -73,15 +71,27 @@ public class GameManager : MonoBehaviour {
 			// TODO: some pretty image of nonsense, some title music (started in Init?)
 			//		 Flip after some time period to hiscores screen / state
 			//       wait for key / button, turn off music, switch state:
-			gameState = GameState.GameStart;
-			break;
-		}
-		case GameState.GameStart: {
-
-			RestartLevel();
+			GameObject obj = GameObject.Find("TitleText");
+			if (obj == null) {
+				obj = new GameObject();
+				obj.name = "TitleText";
+				GUIText text = obj.AddComponent<GUIText>();
+				text.text = "BoredMan - The Quest For Smokes";
+				text.fontSize = 20;
+				text.anchor = TextAnchor.MiddleCenter;
+				obj.transform.position = new Vector3(0.5f, 0.5f, 0);
+			}
+			
+			if (Input.anyKeyDown) {
+				Destroy(obj);
+				currentLevel = kInitialLevel;
+				gameState = GameState.InitLevel;
+			}
 			break;
 		}
 		case GameState.InitLevel: {
+			GameFrozen = false;
+			Application.LoadLevel(currentLevel);
 			gameState = GameState.InGame;
 			break;
 		}
@@ -101,6 +111,7 @@ public class GameManager : MonoBehaviour {
 				GUIText text = obj.AddComponent<GUIText>();
 				text.text = "GAME OVER";
 				text.fontSize = 20;
+				text.anchor = TextAnchor.MiddleCenter;
 				obj.transform.position = new Vector3(0.5f, 0.5f, 0);
 			}
 
@@ -113,7 +124,7 @@ public class GameManager : MonoBehaviour {
 		case GameState.GameCompleted: {
 			// TODO: shiny completion sequence, happy days. Then...
 
-			gameState = GameState.TitleScreen;
+			gameState = GameState.Init;
 			break;
 		}
 		case GameState.Credits: {
@@ -121,13 +132,6 @@ public class GameManager : MonoBehaviour {
 			break;
 		}
 		}
-	}
-
-	void ResetGame ()
-	{
-		lives = maxLives;
-		GameFrozen = false;
-		currentLevel = 0;
 	}
 
 	void UpdateLives() {
@@ -139,11 +143,11 @@ public class GameManager : MonoBehaviour {
 		}
 
 		// Add the label for "lives" first, then add all the heads (one per life)
-		float lifeXPos = -6.5f;
+		float lifeXPos = -7.65f;
 		if (GameObject.Find("Lives_Label_Image") == null) {
 			GameObject lifeLabel = (GameObject)Instantiate(Resources.Load("Lives_Label_Image"));
 			lifeLabel.name = "Lives_Label_Image";
-			lifeLabel.transform.position = new Vector3(lifeXPos, 4.72f, 0f);
+			lifeLabel.transform.position = new Vector3(lifeXPos, 4.75f, 0f);
 		}
 		lifeXPos += 0.4f;
 
