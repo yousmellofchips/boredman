@@ -8,6 +8,25 @@ public class leftRightEnemyMover : MonoBehaviour {
 	private float leftmostX = 0;
 	private float rightmostX = 0;
 
+
+	void OnDrawGizmos() {
+		Vector3 moveToPos = transform.position;
+		float direction = transform.localScale.x < 0 ? 1 : -1;
+
+		moveToPos.x = moveToPos.x + (direction * moveDistance);
+
+		// Are actually running the game? If so, compensate for current position.
+		if (leftmostX != 0 || rightmostX != 0) {
+			if (direction == 1) {
+				moveToPos.x = Mathf.Min(moveToPos.x, rightmostX);
+			} else {
+				moveToPos.x = Mathf.Max(moveToPos.x, leftmostX);
+			}
+		}
+
+		Gizmos.DrawLine(transform.position, moveToPos);
+	}
+
 	// Use this for initialization
 	void Start () {
 		Transform t = transform;

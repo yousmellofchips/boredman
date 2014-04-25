@@ -79,6 +79,14 @@ public class CharacterController2D : MonoBehaviour
 	[Range( 0.001f, 0.3f )]
 	private float _skinWidth = 0.02f;
 
+	[SerializeField]
+	[Range( -7.76f, 7.76f )]
+	public float minXPosition = -7.76f;
+
+	[SerializeField]
+	[Range( -7.76f, 7.76f )]
+	public float maxXPosition = 7.76f;
+
 	/// <summary>
 	/// defines how far in from the edges of the collider rays are cast from. If cast with a 0 extent it will often result in ray hits that are
 	/// not desired (for example a foot collider casting horizontally from directly on the surface can result in a hit)
@@ -395,7 +403,9 @@ public class CharacterController2D : MonoBehaviour
 		var rayDirection = isGoingRight ? Vector2.right : -Vector2.right;
 		var initialRayOrigin = isGoingRight ? _raycastOrigins.bottomRight : _raycastOrigins.bottomLeft;
 
-		if ((isGoingRight && transform.position.x >= 7.76) || (!isGoingRight && transform.position.x <= -7.76)) {
+		// Check for screen movement limits.
+		if ((isGoingRight && transform.position.x >= maxXPosition) ||
+		    (!isGoingRight && transform.position.x <= minXPosition)) {
 			deltaMovement.x = 0.0f;
 		}
 
@@ -489,24 +499,38 @@ public class CharacterController2D : MonoBehaviour
 	private void moveVertically( ref Vector3 deltaMovement )
 	{
 		var isGoingUp = deltaMovement.y > 0;
+		var isGoingLeft = deltaMovement.x < 0;
 		var rayDistance = Mathf.Abs( deltaMovement.y ) + _skinWidth;
 		var rayDirection = isGoingUp ? Vector2.up : -Vector2.up;
-		var initialRayOrigin = isGoingUp ? _raycastOrigins.topLeft : _raycastOrigins.bottomLeft;
+		var initialLeftRayOrigin = isGoingUp ? _raycastOrigins.topLeft : _raycastOrigins.bottomLeft;
+		var initialRightRayOrigin = isGoingUp ? _raycastOrigins.topRight : _raycastOrigins.bottomRight;
 
 		// apply our horizontal deltaMovement here so that we do our raycast from the actual position we would be in if we had moved
-		initialRayOrigin.x += deltaMovement.x;
+		initialLeftRayOrigin.x += deltaMovement.x;
+		initialRightRayOrigin.x += deltaMovement.x;
 
 		// if we are moving up, we should ignore the layers in oneWayPlatformMask
 		var mask = platformMask;
 		if( isGoingUp )
 			mask &= ~oneWayPlatformMask;
 
+		float hDistBetweenRays = isGoingLeft ? -_horizontalDistanceBetweenRays : _horizontalDistanceBetweenRays;
+
 		for( var i = 0; i < totalVerticalRays; i++ )
 		{
-			var ray = new Vector2( initialRayOrigin.x + i * _horizontalDistanceBetweenRays, initialRayOrigin.y );
+			// Check side according to horizontal facing.
+			// TODO: checkDownwardCollision sets the member _raycastHit, which sucks.
+			var ray = checkDownwardCollision(isGoingLeft ? initialLeftRayOrigin : initialRightRayOrigin, rayDirection, rayDistance, mask, -hDistBetweenRays, i);
+			if (!_raycastHit) {
+				ray = checkDownwardCollision(isGoingLeft ? initialRightRayOrigin : initialLeftRayOrigin, rayDirection, rayDistance, mask, hDistBetweenRays, i);
+			}
 
-			DrawRay( ray, rayDirection * rayDistance, Color.red );
-			_raycastHit = Physics2D.Raycast( ray, rayDirection, rayDistance, mask );
+			//fio: old code the above bit replaces
+//			var ray = new Vector2( initialLeftRayOrigin.x + i * _horizontalDistanceBetweenRays, initialLeftRayOrigin.y );
+//
+//			DrawRay( ray, rayDirection * rayDistance, Color.red );
+//			_raycastHit = Physics2D.Raycast( ray, rayDirection, rayDistance, mask );
+
 			if( _raycastHit )
 			{
 				// set our new deltaMovement and recalculate the rayDistance taking it into account
@@ -535,6 +559,14 @@ public class CharacterController2D : MonoBehaviour
 		}
 	}
 
+	private Vector2 checkDownwardCollision(Vector3 initialRayOrigin, Vector2 rayDirection, float rayDistance, LayerMask mask, float hDistBetweenRays, int rayIndex)
+	{
+		var ray = new Vector2( initialRayOrigin.x + rayIndex * hDistBetweenRays, initialRayOrigin.y );
+		
+		DrawRay( ray, rayDirection * rayDistance, Color.red );
+		_raycastHit = Physics2D.Raycast( ray, rayDirection, rayDistance, mask );
+		return ray;
+	}
 
 	/// <summary>
 	/// checks the center point under the BoxCollider2D for a slope. If it finds one then the deltaMovement is adjusted so that
