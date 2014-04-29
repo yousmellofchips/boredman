@@ -89,7 +89,7 @@ public class PhysicsPlayerTester : MonoBehaviour
 		}
 	}
 
-	private bool hacktasticBypassed = false;
+	private bool hacktasticBypassed = true;
 
 	void DoDeath ()
 	{

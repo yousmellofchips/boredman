@@ -339,6 +339,8 @@ public class CharacterController2D : MonoBehaviour
 		go.layer = gameObject.layer;
 		// scale is slightly less so that we don't get trigger messages when colliding with non-triggers
 		go.transform.localScale = transform.localScale * triggerHelperBoxColliderScale;
+		// set to player position, to avoid snapping (cheers Chris Butler who, btw, rocks!)
+		go.transform.position = transform.position;
 
 		go.AddComponent<CC2DTriggerHelper>().setParentCharacterController( this );
 
